@@ -19,7 +19,7 @@ The main steps to complete this activity are:
 
 I had to "discover" the network, searching for any device available in it, in particular I had to find the IP address of the target. So, I used the `netdiscover` command in the terminal. This is a reconnaissance tool to identify live hosts on the network. The following picture shows the output of the `netdiscover` command I obtained.
 
-![IP addresses found](screenshot_demo/netdiscover_2.png)
+![IP addresses found](screenshot/netdiscover_2.png)
 
 At this point I had to obtain some information about the IP addresses I have just obtained. So, I used the `nmap` command with the `-A` option set to obtain as much information as possible. This command executes several scans and scripts to analyse the specified IP address, providing many information about it. In particular, I was interested to know which port numbers were opened on these IP addresses. The following picture shows the output of the command for each IP address I found.
 
