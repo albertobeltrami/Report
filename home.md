@@ -23,11 +23,11 @@ I had to "discover" the network, searching for any device available in it, in pa
 
 At this point I had to obtain some information about the IP addresses I have just obtained. So, I used the `nmap` command with the `-A` option set to obtain as much information as possible. This command executes several scans and scripts to analyse the specified IP address, providing many information about it. In particular, I was interested to know which port numbers were opened on these IP addresses. The following picture shows the output of the command for each IP address I found.
 
-![`nmap` output](screenshot_demo/nmap.png)
+![`nmap` output](screenshot/nmap.png)
 
 The 10.0.2.1 IP address is something related to DNS, since it had the 53 port opened (I will not use this device during this activity, in the following steps I just ignored it). I ignored also the 10.0.2.3 IP address, since it seems down. However, I observed there was an 80 port opened on the IP address is 10.0.2.15. This will be the target.  Since the port 80 is assigned to internet communications, I browsed the IP address of the target (http://10.0.2.15). I obtained a web page. Then, I navigate within this web page clicking on the word *"target"* and then on *"uncategorized"*, so I have been redirected to the http://10.0.2.15/Hackademic_RTB1/?cat=1 page. Simply adding a single quote ( ' ) to this URL, I obtained a WordPress database error. The following picture shows the error statement (inside the red box).
 
-![Vulnerability exposition](screenshot_demo/vulnerability_exposition.png)
+![Vulnerability exposition](screenshot/vulnerability_exposition.png)
 
 In addition, from these web pages I found some information about the goal of the entire activity, since in the webpage I found the statement: *"Goal: Gain access to the (HackademicRTB1) box and read the “**Key.txt**” file in the root directory"*.
 
@@ -39,7 +39,7 @@ The error I have just found was a vulnerability exposition of the web applicatio
 
 This command targets the specified URL automaticaly checking for  SQL injection vulnerabilities. If a vulnerability is found, this command enumerates and lists all the databases available on the targeted system (without asking any user input/interaction). The following picture shows the output of the command I executed.
 
-![SQL injection vulnerabilities check](screenshot_demo/sql_1.png)
+![SQL injection vulnerabilities check](screenshot/sql_1.png)
 
 ## Databases and WordPress user credentials extraction
 
@@ -51,7 +51,7 @@ This command is the SQL injection attack on the targeted web application. It ext
 
 The following picture shows the output of the command (actually this is only a portion of the entire output I obtained). In particular, there are all the username registered on the web application with their corresponding password and password hash.
 
-![SQL attack injection and automatic password cracking](screenshot_demo/sql_2.png)
+![SQL attack injection and automatic password cracking](screenshot/sql_2.png)
 
 This means I have obtained valid credentials for the web application.
 
@@ -69,7 +69,7 @@ The idea was to modify the `hello.php` file to connect from Kali to the target. 
 
 I copied the content of the `php-reverse-shell.php` file and pasted it in the `hello.php` file. At that point, I had to change a certain parameter of the `hello.php` file to specify the IP address of the machine I wanted to connect from (the Kali machine) in the reverse shell. So, I obtained the IP address of the Kali machine through an `ifconfig` command, and I inserted it in the `hello.php` file.
 
-![IP address of Kali inserted in the `hello.php` file](screenshot_demo/IP_kali.png)
+![IP address of Kali inserted in the `hello.php` file](screenshot/IP_kali.png)
 
 These were very important steps to establish a reverse shell connection to be able to communicate and execute remote commands on the target from Kali.
 
@@ -113,9 +113,9 @@ I have executed the following commands from remote on the target machine (again,
 
 So, I managed to find and get the flag: the content of the `key.txt` file. The following pictures show the terminal I used for the creation of reverse shell connection between Kali and the target, the exploit download on the target, the commands to reach the `root` directory and finally the command to see the content of the `key.txt` file. 
 
-![](screenshot_demo/last_commands_1.png)
+![](screenshot/last_commands_1.png)
 
-![](screenshot_demo/last_commands_2.png)
+![](screenshot/last_commands_2.png)
 
 ## Sources
 
