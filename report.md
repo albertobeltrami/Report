@@ -1,4 +1,4 @@
-# Report for the *Cybersecurity* course - Hackademic-RTB1.
+# Report for the *Cybersecurity* course - Hackademic-RTB1
 *Alberto Beltrami - IN2000253*
 
 This is a CTF ("Capture The Flag") challenge. The goal is to read (capture) a specific file (the flag) stored in the target machine.
