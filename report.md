@@ -101,7 +101,7 @@ I have executed the following commands from remote on the target machine (again,
 
 - `chmod 777 kernel`: command to change permissions of the `kernel` file. After this command, all users are able to read, write and execute the `kernel` file.
 
-- `./kernel`: command to run the `kernel` file previously created (this command have been granted only because of the permissions changes for this file in the previous command).
+- `./kernel`: command to execute the `kernel` file previously created (this command have been granted only because of the permissions changes for this file in the previous command).
 
 - `cd /root`: command to access the `root` directory of the target. This directory is the top-level directory in every Unix file system hierarchy, and it contains all other directories and files on the system. This directory is typically accessible only to the root user or users with administrative privileges. I was able to access it because of the exploit I have executed on the target (after the execution of the exploit, I gained privileges to access this directory).
  
