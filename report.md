@@ -77,7 +77,7 @@ These were very important steps to be able to establish a reverse shell connecti
 
 I ran (on the Kali terminal) the Netcat listener with the `nc -lvp 1234` command. This command "listen" from an incoming connection on the 1234 port. This port number was written in the `php-reverse-shell.php` file (so, at that point it was written in the `hello.php` file, too).
 
-To start the connection, I browsed http://10.0.2.15/Hackademic_RTB1/wp-content/plugins/hello.php. This means I was accessing the `hello.php` file I have modified in the previously steps, and executing the script (written in the `hello.php` file) to activate a reverse shell connection between Kali and the target. After that, I was able to execute command within the target machine from Kali.
+To start the connection, I browsed http://10.0.2.15/Hackademic_RTB1/wp-content/plugins/hello.php. This means I was requesting the `hello.php` file I have modified in the previously steps, and executing the script (written in the `hello.php` file) to activate a reverse shell connection between Kali and the target. After that, I was able to execute command within the target machine from Kali.
 
 ## Exploiting the target
 
