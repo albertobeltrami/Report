@@ -97,7 +97,7 @@ I have executed the following commands from remote on the target machine through
 
 ## Getting root access and flag capture
 
-I have executed the following commands from remote on the target machine (again, through the remote shell connection) to get root access and to read the `key.txt` file (get the flag).
+I have executed the following commands from remote on the target machine (again, through the reverse shell connection) to get root access and to read the `key.txt` file (get the flag).
 
 - `chmod 777 kernel`: command to change permissions of the `kernel` file. After this command, all users are able to read, write and execute it.
 
