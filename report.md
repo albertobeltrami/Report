@@ -99,7 +99,7 @@ I have executed the following commands from remote on the target machine through
 
 I have executed the following commands from remote on the target machine (again, through the reverse shell connection) to get root access and to read the `key.txt` file (get the flag).
 
-- `chmod 777 kernel`: command to change permissions of the `kernel` file. After this command, all users are able to read, write and execute it.
+- `chmod 777 kernel`: command to change permissions of the `kernel` file. After this command, all users are able to read, write and execute the `kernel` file.
 
 - `./kernel`: command to run the `kernel` file previously created (this command have been granted only because of the permissions changes for this file in the previous command).
 
