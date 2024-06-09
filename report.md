@@ -61,7 +61,7 @@ I browsed the WordPress login page (http://10.0.2.15/Hackademic_RTB1/wp-login.ph
 
 Logging in with users credentials found with the previously command, I noticed the user *"GeorgeMiller"* has much more available options than other users. In particular, this user had the privileges to add and modify files. So, I decided to proceed the activity on the web application using this identity.
 
-Clicking the *"Manage"* botton and then on the *"Files"* botton, I found a file named `hello.php`.
+Clicking the *"Manage"* button and then on the *"Files"* button, I found a file named `hello.php`.
 
 ## `hello.php` file update and Reverse shell execution
 
